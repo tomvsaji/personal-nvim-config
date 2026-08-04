@@ -191,16 +191,203 @@ to `opts` in `lua/custom/plugins/formatting.lua`.
 Text objects from mini.ai: `va)` around parens, `ci"` inside quotes, `daf` a
 function. Combine with any verb.
 
+---
+
+## Editing workflow
+
+The idea that makes Vim click: you almost never type **verb + arrow keys**. You
+type **verb + text object**, and the editor works out the range.
+
+`ci"` is *change inside quotes*. It does not matter where in the string your
+cursor is, or how long the string is — the quotes define the range. Same for
+`ci(`, `cit` (an HTML tag), `cip` (a paragraph).
+
+### The grammar
+
+**verb + [count] + modifier + object**
+
+| Verbs | |
+| --- | --- |
+| `c` | **c**hange (delete and start typing) |
+| `d` | **d**elete |
+| `y` | **y**ank (copy) |
+| `v` | **v**isually select |
+| `>` / `<` | indent / dedent |
+| `gu` / `gU` | lowercase / uppercase |
+
+| Modifiers | |
+| --- | --- |
+| `i` | **i**nside — just the contents |
+| `a` | **a**round — contents plus the delimiters or trailing space |
+
+| Objects | |
+| --- | --- |
+| `w` / `W` | word / WORD (WORD ignores punctuation) |
+| `"` `'` `` ` `` | quoted string |
+| `(` `)` `b` | parentheses |
+| `[` `]` | square brackets |
+| `{` `}` `B` | braces |
+| `t` | HTML/XML tag |
+| `p` | paragraph (block separated by blank lines) |
+| `f` | function **call** (via mini.ai) — see the note below |
+| `a` | argument / parameter (via mini.ai) |
+
+Combine freely. `dap` deletes a paragraph. `yi(` copies what is inside the
+parens. `d2aw` deletes two words including their spaces.
+
+> **`f` is a function *call*, not a function definition.** Given
+> `result = foo(alpha, beta)`, `dif` leaves `result = foo()` (deletes the
+> arguments) while `daf` deletes the whole call, leaving just `result =`. There
+> is no text object for a function *body* in this config — that needs treesitter
+> textobjects, which are not installed.
+>
+> `a` is the useful companion: with the cursor on `alpha`, `cia` changes just
+> that one argument, and `daa` deletes it along with its separating comma
+> (leaving `foo( beta)` — it does not tidy the whitespace, so `cia` is usually
+> the one you want).
+
+### The dozen that carry most of the work
+
+| Keys | Does |
+| --- | --- |
+| `ciw` | Change the word under the cursor — the single most-used edit |
+| `ci"` / `ci(` / `ci{` | Change inside quotes / parens / braces |
+| `caw` | Change the word *and* its trailing space |
+| `dd` / `yy` | Delete / copy the whole line |
+| `A` / `I` | Append at end of line / insert at first non-blank |
+| `o` / `O` | Open a new line below / above and start typing |
+| `x` / `X` | Delete the character under / before the cursor |
+| `r<char>` | Replace one character without entering insert mode |
+| `~` | Toggle the case of one character |
+| `J` | Join this line with the next |
+| `.` | **Repeat the last change** — see below |
+| `u` / `Ctrl-r` | Undo / redo |
+
+### The dot command
+
+`.` repeats your last change. This is the single biggest multiplier in Vim, and
+it rewards making edits *small and self-contained*.
+
+Rename three occurrences of `oldName` on different lines:
+
+1. `/oldName` then `Enter` to jump to the first
+2. `ciw` `newName` then `Esc`
+3. `n` to jump to the next, then `.` to repeat the change
+4. `n` `.` again
+
+For renaming a *symbol* across the whole project, use `grn` (LSP rename)
+instead — it understands scope, so it will not touch a string that happens to
+contain the same text.
+
+### Moving without arrow keys
+
+| Keys | Moves to |
+| --- | --- |
+| `w` / `b` | Start of next / previous word |
+| `e` | End of the current word |
+| `0` / `^` / `$` | Start of line / first non-blank / end of line |
+| `f<char>` / `F<char>` | Next / previous occurrence of a character on this line |
+| `t<char>` | Just before the next occurrence of a character |
+| `;` / `,` | Repeat the last `f`/`t` forward / backward |
+| `%` | Jump to the matching bracket |
+| `{` / `}` | Previous / next blank line |
+| `gg` / `G` | Top / bottom of file |
+| `<n>G` | Line `<n>` |
+| `Ctrl-d` / `Ctrl-u` | Half a page down / up |
+| `zz` | Centre the current line on screen |
+| `Ctrl-o` / `Ctrl-i` | Back / forward through your jump history |
+
+Motions are also objects: `d$` deletes to end of line, `y%` copies to the
+matching bracket, `cf,` changes up to the next comma.
+
+Because line numbers here are **relative**, `d5j` (delete 5 lines down) and `9k`
+(up 9 lines) can be read straight off the gutter.
+
+### Visual mode
+
+`v` for characters, `V` for lines, `Ctrl-v` for a rectangular block. Select,
+then apply a verb.
+
+`Ctrl-v` block mode is the one worth knowing: select a column, press `I`, type,
+then `Esc`, and the text is inserted on **every** selected line. That is how you
+comment or prefix many lines at once — though `gc` with a motion is easier for
+comments.
+
+In visual mode: `>` and `<` indent, `=` auto-indents, `<leader>f` formats just
+the selection, and `<leader>hs` stages just those lines in git.
+
+### Search and replace
+
+| Command | Does |
+| --- | --- |
+| `/text` then `Enter` | Search forward; `n` / `N` for next / previous |
+| `*` | Search for the word under the cursor |
+| `:%s/old/new/g` | Replace throughout the file |
+| `:%s/old/new/gc` | Same, but confirm each one |
+| `:s/old/new/g` | Current line only |
+| `:'<,'>s/old/new/g` | Within the visual selection (the range is prefilled) |
+
+`<leader>sg` (live project grep) and `grn` (LSP rename) are usually better than
+`:%s` for anything crossing files.
+
+### Undo
+
+`u` undoes, `Ctrl-r` redoes. Undo blocks break at each `Esc`, so leaving insert
+mode occasionally keeps undo granular rather than wiping out a whole paragraph.
+
+`:earlier 10m` rewinds the file to how it was ten minutes ago, and `:later`
+comes back — useful when `u` has gone too far to count.
+
+### A worked example
+
+Change a function's signature and fix up a call site:
+
+1. `grd` to jump to the function definition
+2. `ci(` to rewrite the parameter list, `Esc`
+3. `grr` to list every caller, `Enter` on one
+4. `cia` on an argument to change just that one, or `dif` to clear the whole
+   argument list and retype it
+5. `<leader>f` to format
+6. `]d` to jump to any error that introduced
+7. `<leader>hp` to review the diff, `<leader>hs` to stage it
+
 ## Completion
 
 | Keys | Action |
 | --- | --- |
+| `Tab` | **Accept** the suggestion (or the first one, if you have not moved) |
 | `Ctrl-n` / `Ctrl-p` | Next / previous suggestion |
-| `Ctrl-y` | Accept |
-| `Ctrl-Space` | Open the menu, or show docs if open |
-| `Ctrl-e` | Dismiss |
-| `Ctrl-k` | Toggle signature help |
-| `Tab` / `Shift-Tab` | Move between snippet placeholders |
+| `Ctrl-y` | Accept (the vim-native accept key; same result as `Tab`) |
+| `Ctrl-Space` | Open the menu, or show docs if already open |
+| `Ctrl-e` | Dismiss the menu |
+| `Ctrl-k` | Toggle signature help (parameter hints) |
+| `Shift-Tab` | Previous snippet placeholder |
+| `Ctrl-f` / `Ctrl-b` | Scroll the documentation popup |
+
+`Tab` accepts when the menu is open, jumps to the next snippet placeholder when
+you are inside a snippet, and inserts a literal tab otherwise — so it does the
+obvious thing in each context. This is blink's `super-tab` preset.
+
+Space never accepts a completion, by design: it is a word separator, so making it
+accept would corrupt normal typing.
+
+## Brackets and quotes
+
+nvim-autopairs is enabled. Typing `(`, `[`, `{`, `"` or `'` inserts the closing
+half and leaves the cursor between them. Typing the closing character when it is
+already there just moves past it rather than doubling it, and backspace over an
+empty pair deletes both halves.
+
+Pressing `Enter` between a pair opens it out:
+
+```text
+function foo() {|}     ->     function foo() {
+                                  |
+                              }
+```
+
+For adding, changing or removing pairs around text that *already exists*, use
+the surround keys in the next section — autopairs only helps as you type.
 
 ## Files and windows
 
