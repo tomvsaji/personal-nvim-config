@@ -246,6 +246,45 @@ parens. `d2aw` deletes two words including their spaces.
 > (leaving `foo( beta)` — it does not tidy the whitespace, so `cia` is usually
 > the one you want).
 
+### Syntax-aware objects (treesitter)
+
+These understand the parse tree, so they know where a definition actually ends
+rather than guessing from indentation or blank lines.
+
+| Keys | Object |
+| --- | --- |
+| `am` / `im` | A function or **m**ethod definition / just its body |
+| `ac` / `ic` | A **c**lass / just its body |
+| `al` / `il` | A **l**oop / just its body |
+
+`m` rather than `f`, because mini.ai already uses `f` for function *calls* and
+both are worth keeping. So `dam` deletes a whole function definition, `cim`
+replaces a function body, `dac` deletes a class.
+
+These jump between definitions:
+
+| Keys | Moves to |
+| --- | --- |
+| `]m` / `[m` | Next / previous function start |
+| `]M` / `[M` | Next / previous function end |
+| `]]` / `[[` | Next / previous class start |
+
+`Ctrl-o` comes back, since these record a jump.
+
+And reordering parameters without retyping them:
+
+| Keys | Action |
+| --- | --- |
+| `<leader>a` | Swap the parameter under the cursor with the next one |
+| `<leader>A` | Swap it with the previous one |
+
+> The built-in ftplugins for Python, Ruby, Rust and Go define their own
+> regex-based `]m` and `[[`, which would shadow these in exactly the languages
+> where they matter most. `vim.g.no_plugin_maps` is therefore set in
+> `lua/custom/plugins/treesitter-textobjects.lua`, which disables ftplugin
+> mappings so the treesitter versions win. The visible trade-off is that
+> Markdown loses its built-in `]]` section jumps.
+
 ### The dozen that carry most of the work
 
 | Keys | Does |
