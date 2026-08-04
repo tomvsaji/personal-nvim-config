@@ -1,80 +1,40 @@
 <!-- markdownlint-disable MD013 -->
-<!-- Line-length rule off: the tables below have rows that cannot wrap. -->
+<!-- Line-length rule off: table rows cannot wrap. -->
 
 # Neovim config
 
-A personal fork of [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim),
-set up for Python, JavaScript/TypeScript, shell, Markdown, JSON/YAML/TOML and
-Docker, with a full git review workflow.
-
-The upstream kickstart README is kept as
-[KICKSTART-UPSTREAM.md](KICKSTART-UPSTREAM.md) for reference.
-
-**Leader key is the spacebar.** Below, `<leader>` means space.
-
----
+Fork of [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim). Leader key
+is space; `<leader>` below means space. Upstream README:
+[KICKSTART-UPSTREAM.md](KICKSTART-UPSTREAM.md).
 
 ## Install
 
 ```sh
 git clone <this-repo> ~/.config/nvim
-nvim
+nvim          # installs plugins, servers and parsers; takes a few minutes
+:checkhealth  # after restart, should report no errors
 ```
 
-On first launch lazy.nvim installs every plugin at the versions pinned in
-`lazy-lock.json`, Mason installs the language servers, and treesitter compiles
-the syntax parsers. It takes a couple of minutes and prints progress. Restart
-when it settles.
-
-Then run `:checkhealth` — it should report no errors.
-
-### Requirements
-
-Install these first; the config assumes they exist.
-
-| Needed | Why | macOS | Debian/Ubuntu |
+| Requirement | Why | macOS | Debian/Ubuntu |
 | --- | --- | --- | --- |
-| Neovim **0.11+** | Uses the `vim.lsp.config` API | `brew install neovim` | see note below |
+| Neovim **0.11+** | `vim.lsp.config` API | `brew install neovim` | AppImage/tarball — distro packages too old |
 | git | Plugin management | preinstalled | `apt install git` |
-| `tree-sitter` CLI | Compiles syntax parsers | `brew install tree-sitter-cli` | `npm install -g tree-sitter-cli` |
-| Node.js | Six of the language servers are npm packages | `brew install node` | `apt install nodejs npm` |
-| Python 3 | pyright and debugpy | preinstalled | `apt install python3 python3-venv` |
-| A C compiler | Compiles treesitter parsers | Xcode CLI tools | `apt install build-essential` |
-| ripgrep | Fast project-wide search | `brew install ripgrep` | `apt install ripgrep` |
-| fd | Fast file finding | `brew install fd` | `apt install fd-find` |
-| `make`, `unzip`, `curl` | Building and fetching | preinstalled | `apt install make unzip curl` |
+| `tree-sitter` CLI | Compiles parsers | `brew install tree-sitter-cli` | `npm install -g tree-sitter-cli` |
+| Node.js | Six servers are npm packages | `brew install node` | `apt install nodejs npm` |
+| Python 3 | pyright, debugpy | preinstalled | `apt install python3 python3-venv` |
+| C compiler | Compiles parsers | Xcode CLI tools | `apt install build-essential` |
+| ripgrep | Project search | `brew install ripgrep` | `apt install ripgrep` |
+| fd | File finding | `brew install fd` | `apt install fd-find` |
+| `make`, `unzip`, `curl` | Build and fetch | preinstalled | `apt install make unzip curl` |
 
-> **The `tree-sitter` CLI is the one people miss.** Without it every syntax
-> parser fails to compile and Neovim throws errors on each startup. Note the
-> Homebrew formula split: `brew install tree-sitter` gives you only the library.
-> You want `tree-sitter-cli`.
->
-> **Neovim version on Linux.** Distro packages are usually far too old — Ubuntu
-> LTS ships 0.9 or earlier, which cannot run this config. Use the official
-> AppImage or tarball from the
-> [Neovim releases page](https://github.com/neovim/neovim/releases), or Homebrew
-> on Linux.
+- `brew install tree-sitter` installs only the library. The CLI is
+  `tree-sitter-cli`. Without it, parsers fail and Neovim errors on every startup.
+- Ubuntu LTS ships Neovim 0.9 or earlier, which cannot run this config.
+- Windows: use WSL. Keep the repo on the Linux filesystem, not `/mnt/c/`.
+- VPS: Node-based servers need a few hundred MB RAM; trim `servers` in
+  `init.lua` on small boxes.
 
-### Platform notes
-
-**macOS and Linux** — as above, nothing special.
-
-**Windows** — use **WSL**, and treat it as Linux. Everything then behaves
-identically to a native Linux install. Native Windows will run, and the Python
-interpreter paths are handled for it, but it is a far less tested path: some
-Mason packages are Unix-oriented and `shellcheck`/`shfmt` are of limited use.
-
-If you do use WSL, keep this repo on the Linux filesystem (`~/.config/nvim`),
-**not** under `/mnt/c/`. Cross-filesystem I/O in WSL is slow enough to make
-Telescope and treesitter feel sluggish.
-
-**A VPS or remote box** — works fine. Watch the Neovim version note above, and
-be aware the Node-based servers want a few hundred MB of RAM; on a small box you
-may want to trim the server list in `init.lua`.
-
----
-
-## What each language gets
+## Language support
 
 | Filetype | Navigation & types | Formatting | Linting |
 | --- | --- | --- | --- |
@@ -89,68 +49,52 @@ may want to trim the server list in `init.lua`.
 | Dockerfile | dockerls | — | hadolint |
 | compose.yaml | compose LS + yamlls | prettierd | compose schema |
 
-SchemaStore means `package.json`, `tsconfig.json`, GitHub Actions workflows and
-compose files are validated against their real published schemas — a wrong key
-or a wrong type is flagged as you type.
+- SchemaStore validates `package.json`, `tsconfig.json`, GitHub Actions
+  workflows and compose files against their published schemas.
+- Python venvs resolve automatically: activated venv, then project `.venv/` or
+  `venv/`, then system python.
 
-**Python virtualenvs are detected automatically:** an activated venv wins, then
-a project-local `.venv/` or `venv/`, then system python. Nothing to activate
-before launching.
+## Discovery
 
----
-
-## Finding commands without reading this file
-
-You do not need to memorise any of the below.
-
-| Do this | And you get |
+| Keys | Result |
 | --- | --- |
-| Press `<leader>` and **wait** | which-key shows every key you can press next |
-| `<leader>sk` | Fuzzy-search every keymap, by description |
-| `<leader>sc` | Fuzzy-search every `:` command |
-| `<leader>sh` | Search the full Neovim help |
-| `:checkhealth` | Diagnose anything broken |
-
-`<leader>sk` is the real answer to "what was that key again?" — it searches the
-descriptions, so typing "hunk" or "rename" finds the mapping.
-
----
+| `<leader>` then wait | which-key lists the next available keys |
+| `<leader>sk` | Fuzzy-search all keymaps by description |
+| `<leader>sc` | Fuzzy-search all `:` commands |
+| `<leader>sh` | Search Neovim help |
 
 ## Finding things
 
 | Keys | Action |
 | --- | --- |
-| `<leader>sf` | Search **f**iles by name |
-| `<leader>sg` | Search by **g**rep — live text search across the project |
-| `<leader>sw` | Search the **w**ord under your cursor |
+| `<leader>sf` | Search files by name |
+| `<leader>sg` | Live grep across the project |
+| `<leader>sw` | Search the word under the cursor |
 | `<leader>s.` | Recent files |
-| `<leader><leader>` | Switch between open buffers |
-| `<leader>/` | Fuzzy-find within the current file |
-| `<leader>s/` | Grep, but only across open files |
-| `<leader>sr` | **R**esume your last search where you left it |
+| `<leader><leader>` | Switch buffers |
+| `<leader>/` | Fuzzy-find in the current file |
+| `<leader>s/` | Grep across open files only |
+| `<leader>sr` | Resume the last search |
 | `<leader>sn` | Browse these config files |
-| `<leader>ss` | List every Telescope picker |
+| `<leader>ss` | List all Telescope pickers |
 
-Inside a picker: `Ctrl-n`/`Ctrl-p` to move, `Enter` to open, `Esc` to close.
+In a picker: `Ctrl-n`/`Ctrl-p` move, `Enter` opens, `Esc` closes.
 
 ## Navigating code
 
 | Keys | Action |
 | --- | --- |
-| `grd` | **G**o to **d**efinition |
-| `grr` | List all **r**eferences |
-| `gri` | Go to **i**mplementation |
-| `grt` | Go to **t**ype definition |
-| `grD` | Go to **d**eclaration |
-| `K` | Hover — docs and type for the symbol under the cursor |
+| `grd` | Go to definition |
+| `grr` | List references |
+| `gri` | Go to implementation |
+| `grt` | Go to type definition |
+| `grD` | Go to declaration |
+| `K` | Hover: docs and type |
 | `gO` | Outline of the current file |
-| `grn` | **R**e**n**ame the symbol everywhere |
-| `gra` | Code **a**ctions — quick fixes, organise imports |
-| `Ctrl-o` / `Ctrl-i` | Jump back / forward through where you have been |
-| `gx` | Open the URL or file path under the cursor |
-
-`Ctrl-o` is the one people forget. After `grd` takes you somewhere, `Ctrl-o`
-brings you back.
+| `grn` | Rename the symbol everywhere |
+| `gra` | Code actions |
+| `Ctrl-o` / `Ctrl-i` | Back / forward through the jump list |
+| `gx` | Open the URL or path under the cursor |
 
 ## Errors and warnings
 
@@ -159,274 +103,43 @@ brings you back.
 | `]d` / `[d` | Next / previous problem in this file |
 | `]D` / `[D` | Last / first problem in this file |
 | `Ctrl-w d` | Full message for the problem under the cursor |
-| `<leader>sd` | Search all problems across the project |
-| `<leader>q` | Put this file's problems in a list |
-| `gra` | Offer a fix |
-| `:TodoTelescope` | Find every TODO / FIXME / HACK |
+| `<leader>sd` | Search all problems in the project |
+| `<leader>q` | Send this file's problems to a location list |
+| `:TodoTelescope` | List TODO / FIXME / HACK comments |
 
 ## Formatting
 
 | Keys | Action |
 | --- | --- |
-| `<leader>f` | Format the file, or just the selection in visual mode |
-| `:ConformInfo` | Show which formatter runs here, and why |
+| `<leader>f` | Format the file, or the visual selection |
+| `:ConformInfo` | Show which formatter runs here |
 
-**Formatting deliberately does not run on save.** These formatters rewrite the
-whole file, so in a project whose style differs from the default the first save
-would produce a huge unrelated diff. To opt in, add a `format_on_save` function
-to `opts` in `lua/custom/plugins/formatting.lua`.
-
-## Editing
-
-| Keys | Action |
-| --- | --- |
-| `gcc` | Comment / uncomment the line |
-| `gc` + motion | Comment a range (`gcap` = this paragraph) |
-| `sa` + motion + char | **S**urround **a**dd — `saiw"` wraps the word in quotes |
-| `sd` + char | **S**urround **d**elete — `sd"` removes quotes |
-| `sr` + old + new | **S**urround **r**eplace — `sr"'` turns "x" into 'x' |
-| `]<Space>` / `[<Space>` | Add a blank line below / above |
-| `Esc` | Also clears search highlighting |
-
-Text objects from mini.ai: `va)` around parens, `ci"` inside quotes, `daf` a
-function. Combine with any verb.
-
----
-
-## Editing workflow
-
-The idea that makes Vim click: you almost never type **verb + arrow keys**. You
-type **verb + text object**, and the editor works out the range.
-
-`ci"` is *change inside quotes*. It does not matter where in the string your
-cursor is, or how long the string is — the quotes define the range. Same for
-`ci(`, `cit` (an HTML tag), `cip` (a paragraph).
-
-### The grammar
-
-**verb + [count] + modifier + object**
-
-| Verbs | |
-| --- | --- |
-| `c` | **c**hange (delete and start typing) |
-| `d` | **d**elete |
-| `y` | **y**ank (copy) |
-| `v` | **v**isually select |
-| `>` / `<` | indent / dedent |
-| `gu` / `gU` | lowercase / uppercase |
-
-| Modifiers | |
-| --- | --- |
-| `i` | **i**nside — just the contents |
-| `a` | **a**round — contents plus the delimiters or trailing space |
-
-| Objects | |
-| --- | --- |
-| `w` / `W` | word / WORD (WORD ignores punctuation) |
-| `"` `'` `` ` `` | quoted string |
-| `(` `)` `b` | parentheses |
-| `[` `]` | square brackets |
-| `{` `}` `B` | braces |
-| `t` | HTML/XML tag |
-| `p` | paragraph (block separated by blank lines) |
-| `f` | function **call** (via mini.ai) — see the note below |
-| `a` | argument / parameter (via mini.ai) |
-
-Combine freely. `dap` deletes a paragraph. `yi(` copies what is inside the
-parens. `d2aw` deletes two words including their spaces.
-
-> **`f` is a function *call*, not a function definition.** Given
-> `result = foo(alpha, beta)`, `dif` leaves `result = foo()` (deletes the
-> arguments) while `daf` deletes the whole call, leaving just `result =`. There
-> is no text object for a function *body* in this config — that needs treesitter
-> textobjects, which are not installed.
->
-> `a` is the useful companion: with the cursor on `alpha`, `cia` changes just
-> that one argument, and `daa` deletes it along with its separating comma
-> (leaving `foo( beta)` — it does not tidy the whitespace, so `cia` is usually
-> the one you want).
-
-### Syntax-aware objects (treesitter)
-
-These understand the parse tree, so they know where a definition actually ends
-rather than guessing from indentation or blank lines.
-
-| Keys | Object |
-| --- | --- |
-| `am` / `im` | A function or **m**ethod definition / just its body |
-| `ac` / `ic` | A **c**lass / just its body |
-| `al` / `il` | A **l**oop / just its body |
-
-`m` rather than `f`, because mini.ai already uses `f` for function *calls* and
-both are worth keeping. So `dam` deletes a whole function definition, `cim`
-replaces a function body, `dac` deletes a class.
-
-These jump between definitions:
-
-| Keys | Moves to |
-| --- | --- |
-| `]m` / `[m` | Next / previous function start |
-| `]M` / `[M` | Next / previous function end |
-| `]]` / `[[` | Next / previous class start |
-
-`Ctrl-o` comes back, since these record a jump.
-
-And reordering parameters without retyping them:
-
-| Keys | Action |
-| --- | --- |
-| `<leader>a` | Swap the parameter under the cursor with the next one |
-| `<leader>A` | Swap it with the previous one |
-
-> The built-in ftplugins for Python, Ruby, Rust and Go define their own
-> regex-based `]m` and `[[`, which would shadow these in exactly the languages
-> where they matter most. `vim.g.no_plugin_maps` is therefore set in
-> `lua/custom/plugins/treesitter-textobjects.lua`, which disables ftplugin
-> mappings so the treesitter versions win. The visible trade-off is that
-> Markdown loses its built-in `]]` section jumps.
-
-### The dozen that carry most of the work
-
-| Keys | Does |
-| --- | --- |
-| `ciw` | Change the word under the cursor — the single most-used edit |
-| `ci"` / `ci(` / `ci{` | Change inside quotes / parens / braces |
-| `caw` | Change the word *and* its trailing space |
-| `dd` / `yy` | Delete / copy the whole line |
-| `A` / `I` | Append at end of line / insert at first non-blank |
-| `o` / `O` | Open a new line below / above and start typing |
-| `x` / `X` | Delete the character under / before the cursor |
-| `r<char>` | Replace one character without entering insert mode |
-| `~` | Toggle the case of one character |
-| `J` | Join this line with the next |
-| `.` | **Repeat the last change** — see below |
-| `u` / `Ctrl-r` | Undo / redo |
-
-### The dot command
-
-`.` repeats your last change. This is the single biggest multiplier in Vim, and
-it rewards making edits *small and self-contained*.
-
-Rename three occurrences of `oldName` on different lines:
-
-1. `/oldName` then `Enter` to jump to the first
-2. `ciw` `newName` then `Esc`
-3. `n` to jump to the next, then `.` to repeat the change
-4. `n` `.` again
-
-For renaming a *symbol* across the whole project, use `grn` (LSP rename)
-instead — it understands scope, so it will not touch a string that happens to
-contain the same text.
-
-### Moving without arrow keys
-
-| Keys | Moves to |
-| --- | --- |
-| `w` / `b` | Start of next / previous word |
-| `e` | End of the current word |
-| `0` / `^` / `$` | Start of line / first non-blank / end of line |
-| `f<char>` / `F<char>` | Next / previous occurrence of a character on this line |
-| `t<char>` | Just before the next occurrence of a character |
-| `;` / `,` | Repeat the last `f`/`t` forward / backward |
-| `%` | Jump to the matching bracket |
-| `{` / `}` | Previous / next blank line |
-| `gg` / `G` | Top / bottom of file |
-| `<n>G` | Line `<n>` |
-| `Ctrl-d` / `Ctrl-u` | Half a page down / up |
-| `zz` | Centre the current line on screen |
-| `Ctrl-o` / `Ctrl-i` | Back / forward through your jump history |
-
-Motions are also objects: `d$` deletes to end of line, `y%` copies to the
-matching bracket, `cf,` changes up to the next comma.
-
-Because line numbers here are **relative**, `d5j` (delete 5 lines down) and `9k`
-(up 9 lines) can be read straight off the gutter.
-
-### Visual mode
-
-`v` for characters, `V` for lines, `Ctrl-v` for a rectangular block. Select,
-then apply a verb.
-
-`Ctrl-v` block mode is the one worth knowing: select a column, press `I`, type,
-then `Esc`, and the text is inserted on **every** selected line. That is how you
-comment or prefix many lines at once — though `gc` with a motion is easier for
-comments.
-
-In visual mode: `>` and `<` indent, `=` auto-indents, `<leader>f` formats just
-the selection, and `<leader>hs` stages just those lines in git.
-
-### Search and replace
-
-| Command | Does |
-| --- | --- |
-| `/text` then `Enter` | Search forward; `n` / `N` for next / previous |
-| `*` | Search for the word under the cursor |
-| `:%s/old/new/g` | Replace throughout the file |
-| `:%s/old/new/gc` | Same, but confirm each one |
-| `:s/old/new/g` | Current line only |
-| `:'<,'>s/old/new/g` | Within the visual selection (the range is prefilled) |
-
-`<leader>sg` (live project grep) and `grn` (LSP rename) are usually better than
-`:%s` for anything crossing files.
-
-### Undo
-
-`u` undoes, `Ctrl-r` redoes. Undo blocks break at each `Esc`, so leaving insert
-mode occasionally keeps undo granular rather than wiping out a whole paragraph.
-
-`:earlier 10m` rewinds the file to how it was ten minutes ago, and `:later`
-comes back — useful when `u` has gone too far to count.
-
-### A worked example
-
-Change a function's signature and fix up a call site:
-
-1. `grd` to jump to the function definition
-2. `ci(` to rewrite the parameter list, `Esc`
-3. `grr` to list every caller, `Enter` on one
-4. `cia` on an argument to change just that one, or `dif` to clear the whole
-   argument list and retype it
-5. `<leader>f` to format
-6. `]d` to jump to any error that introduced
-7. `<leader>hp` to review the diff, `<leader>hs` to stage it
+Does not run on save: formatters rewrite the whole file, producing large
+unrelated diffs in projects with a different style. To enable, add
+`format_on_save` to `opts` in `lua/custom/plugins/formatting.lua`.
 
 ## Completion
 
 | Keys | Action |
 | --- | --- |
-| `Tab` | **Accept** the suggestion (or the first one, if you have not moved) |
+| `Tab` | Accept the suggestion (the first, if none selected) |
+| `Ctrl-y` | Accept |
 | `Ctrl-n` / `Ctrl-p` | Next / previous suggestion |
-| `Ctrl-y` | Accept (the vim-native accept key; same result as `Tab`) |
-| `Ctrl-Space` | Open the menu, or show docs if already open |
-| `Ctrl-e` | Dismiss the menu |
-| `Ctrl-k` | Toggle signature help (parameter hints) |
+| `Ctrl-Space` | Open the menu, or show docs if open |
+| `Ctrl-e` | Dismiss |
+| `Ctrl-k` | Toggle signature help |
 | `Shift-Tab` | Previous snippet placeholder |
-| `Ctrl-f` / `Ctrl-b` | Scroll the documentation popup |
+| `Ctrl-f` / `Ctrl-b` | Scroll the docs popup |
 
-`Tab` accepts when the menu is open, jumps to the next snippet placeholder when
-you are inside a snippet, and inserts a literal tab otherwise — so it does the
-obvious thing in each context. This is blink's `super-tab` preset.
-
-Space never accepts a completion, by design: it is a word separator, so making it
-accept would corrupt normal typing.
+`Tab` accepts with the menu open, jumps placeholders inside a snippet, otherwise
+inserts a tab (blink `super-tab` preset). Space never accepts.
 
 ## Brackets and quotes
 
-nvim-autopairs is enabled. Typing `(`, `[`, `{`, `"` or `'` inserts the closing
-half and leaves the cursor between them. Typing the closing character when it is
-already there just moves past it rather than doubling it, and backspace over an
-empty pair deletes both halves.
-
-Pressing `Enter` between a pair opens it out:
-
-```text
-function foo() {|}     ->     function foo() {
-                                  |
-                              }
-```
-
-For adding, changing or removing pairs around text that *already exists*, use
-the surround keys in the next section — autopairs only helps as you type.
+nvim-autopairs: typing `(`, `[`, `{`, `"`, `'` inserts the closing half; typing
+the closer when it exists steps over it; backspace on an empty pair deletes
+both; `Enter` inside a pair opens it into a block. For existing text, use
+surround below.
 
 ## Files and windows
 
@@ -440,148 +153,232 @@ the surround keys in the next section — autopairs only helps as you type.
 
 | Keys | Action |
 | --- | --- |
-| `<leader>b` | Toggle a **b**reakpoint |
+| `<leader>b` | Toggle a breakpoint |
 | `<leader>B` | Conditional breakpoint |
 | `F5` | Start / continue |
 | `F1` / `F2` / `F3` | Step into / over / out |
 | `F7` | Toggle the debugger UI |
 
-Python only (pytest is the configured runner):
+Python only, runner is pytest:
 
 | Keys | Action |
 | --- | --- |
-| `<leader>dm` | Debug the test **m**ethod under the cursor |
-| `<leader>dc` | Debug the test **c**lass |
-| `<leader>ds` | Debug the visual **s**election |
+| `<leader>dm` | Debug the test method under the cursor |
+| `<leader>dc` | Debug the test class |
+| `<leader>ds` | Debug the visual selection |
 
----
+## Editing
+
+| Keys | Action |
+| --- | --- |
+| `gcc` | Comment / uncomment the line |
+| `gc` + motion | Comment a range (`gcap` = paragraph) |
+| `sa` + motion + char | Surround add: `saiw"` wraps the word |
+| `sd` + char | Surround delete: `sd"` |
+| `sr` + old + new | Surround replace: `sr"'` |
+| `]<Space>` / `[<Space>` | Blank line below / above |
+| `Esc` | Also clears search highlighting |
+
+### Grammar
+
+**verb + [count] + modifier + object** — e.g. `ci"`, `dap`, `d2aw`, `yi(`.
+
+| Verbs | | Modifiers | |
+| --- | --- | --- | --- |
+| `c` | change | `i` | inside: contents only |
+| `d` | delete | `a` | around: plus delimiters |
+| `y` | yank | | |
+| `v` | visual select | | |
+| `>` / `<` | indent / dedent | | |
+| `gu` / `gU` | lower / uppercase | | |
+
+| Objects | |
+| --- | --- |
+| `w` / `W` | word / WORD (ignores punctuation) |
+| `"` `'` `` ` `` | quoted string |
+| `(` `)` `b` | parentheses |
+| `[` `]` | square brackets |
+| `{` `}` `B` | braces |
+| `t` | HTML/XML tag |
+| `p` | paragraph |
+| `f` | function **call** (mini.ai) |
+| `a` | argument (mini.ai) |
+
+- `f` is a call, not a definition. On `result = foo(alpha, beta)`, `dif` leaves
+  `result = foo()`, `daf` leaves `result =`. Use `am`/`im` for definitions.
+- On `alpha`: `cia` changes that argument; `daa` deletes it with its comma but
+  leaves `foo( beta)`.
+
+### Treesitter objects
+
+| Keys | Object |
+| --- | --- |
+| `am` / `im` | Function or method definition / its body |
+| `ac` / `ic` | Class / its body |
+| `al` / `il` | Loop / its body |
+| `]m` / `[m` | Next / previous function start |
+| `]M` / `[M` | Next / previous function end |
+| `]]` / `[[` | Next / previous class start |
+| `<leader>a` / `<leader>A` | Swap this parameter with the next / previous |
+
+`m` not `f`, since mini.ai uses `f` for calls — `dam` deletes a definition,
+`cim` replaces a body, `dac` deletes a class. Movement records a jump, so
+`Ctrl-o` returns.
+
+`vim.g.no_plugin_maps` is set in
+`lua/custom/plugins/treesitter-textobjects.lua`, because the built-in Python,
+Ruby, Rust and Go ftplugins map `]m` and `[[` buffer-locally and would shadow
+these. Trade-off: Markdown loses its built-in `]]` section jumps.
+
+### Common edits
+
+| Keys | Action |
+| --- | --- |
+| `ciw` | Change the word under the cursor |
+| `ci"` / `ci(` / `ci{` | Change inside quotes / parens / braces |
+| `caw` | Change the word and its trailing space |
+| `dd` / `yy` | Delete / copy the line |
+| `A` / `I` | Append at end / insert at first non-blank |
+| `o` / `O` | Open a line below / above |
+| `x` / `X` | Delete char under / before the cursor |
+| `r<char>` | Replace one character |
+| `~` | Toggle case of one character |
+| `J` | Join with the next line |
+| `.` | Repeat the last change |
+| `u` / `Ctrl-r` | Undo / redo |
+
+`.` repeats the last change: `/oldName` `Enter`, `ciw` `newName` `Esc`, then
+`n` `.` per occurrence. For a symbol across the project use `grn`, which
+understands scope.
+
+### Motions
+
+| Keys | Moves to |
+| --- | --- |
+| `w` / `b` | Start of next / previous word |
+| `e` | End of the current word |
+| `0` / `^` / `$` | Start of line / first non-blank / end of line |
+| `f<char>` / `F<char>` | Next / previous occurrence on this line |
+| `t<char>` | Just before the next occurrence |
+| `;` / `,` | Repeat the last `f`/`t` forward / backward |
+| `%` | Matching bracket |
+| `{` / `}` | Previous / next blank line |
+| `gg` / `G` | Top / bottom of file |
+| `<n>G` | Line `<n>` |
+| `Ctrl-d` / `Ctrl-u` | Half page down / up |
+| `zz` | Centre the current line |
+| `Ctrl-o` / `Ctrl-i` | Back / forward through the jump list |
+
+Motions work as objects: `d$`, `y%`, `cf,`. Line numbers are relative, so `d5j`
+and `9k` read off the gutter.
+
+### Visual mode
+
+`v` characters, `V` lines, `Ctrl-v` block. With `Ctrl-v`: select a column, `I`,
+type, `Esc` — inserted on every selected line. In visual mode `>` / `<` indent,
+`=` auto-indents, `<leader>f` formats the selection, `<leader>hs` stages it.
+
+### Search and replace
+
+| Command | Action |
+| --- | --- |
+| `/text` `Enter` | Search forward; `n` / `N` next / previous |
+| `*` | Search the word under the cursor |
+| `:%s/old/new/g` | Replace in the file |
+| `:%s/old/new/gc` | Replace with confirmation |
+| `:s/old/new/g` | Current line only |
+| `:'<,'>s/old/new/g` | Within the visual selection |
+
+### Undo
+
+`u` / `Ctrl-r`. Undo blocks break at each `Esc`. `:earlier 10m` rewinds the file
+ten minutes, `:later` returns.
 
 ## Git
 
-### What a hunk is
-
-A **diff** is the list of differences between two versions of a file — only the
-changed lines, plus a little context.
-
-A **hunk** is one contiguous chunk of that diff. Edit line 10 and line 300 of
-the same file and that is *two* hunks; edit lines 10–12 and that is *one*. Hunks
-let you review or accept one change at a time instead of the whole file.
-
-**Staging** is git's "shopping basket" step. Work lives in three places:
+A **hunk** is one contiguous chunk of a diff — editing lines 10 and 300 gives
+two hunks, editing 10–12 gives one. **Staging** is the intermediate step that
+lets you commit some changes and leave others.
 
 | Place | Meaning |
 | --- | --- |
-| Working tree | The files on disk right now |
-| Staging area (index) | What you have chosen for the next commit |
-| Repository | What you have actually committed |
+| Working tree | Files on disk now |
+| Staging area (index) | Chosen for the next commit |
+| Repository | Committed |
 
-`git add` moves a change from the first to the second, `git commit` from the
-second to the third. The middle step exists so you can commit *some* of your
-changes and leave the rest — if you fixed a bug and also renamed a variable, you
-can commit them separately.
-
-That is what `<leader>hs` is for: it stages one hunk, not the whole file. Select
-lines in visual mode first and it stages only those.
-
-### Reviewing the file you are in
+### Current file
 
 | Keys | Action |
 | --- | --- |
 | `]c` / `[c` | Next / previous changed hunk |
-| `<leader>hp` | **P**review the hunk's diff |
-| `<leader>hi` | Same, but **i**nline |
-| `<leader>hb` | **B**lame this line, with the commit message |
-| `<leader>tb` | **T**oggle always-on **b**lame |
-| `<leader>hd` / `<leader>hD` | **D**iff against the index / last commit |
-| `<leader>hs` / `<leader>hr` | **S**tage / **r**eset this hunk |
-| `<leader>hS` / `<leader>hR` | Stage / reset the whole buffer |
+| `<leader>hp` | Preview the hunk's diff |
+| `<leader>hi` | Preview inline |
+| `<leader>hb` | Blame this line with its commit message |
+| `<leader>tb` | Toggle always-on blame |
+| `<leader>hd` / `<leader>hD` | Diff against index / last commit |
+| `<leader>hs` / `<leader>hr` | Stage / reset this hunk |
+| `<leader>hS` / `<leader>hR` | Stage / reset the buffer |
 
-A typical pass: `]c` to the first change, `<leader>hp` to see it, `<leader>hs` to
-keep it or `<leader>hr` to drop it, then `]c` onward.
+`<leader>hs` and `<leader>hr` accept a visual selection, staging part of a hunk.
 
-### Reviewing a whole change, and history
-
-| Keys | Action |
-| --- | --- |
-| `<leader>gd` | **D**iff view — every changed file, side by side |
-| `<leader>gm` | Diff your branch against **m**ain — what a reviewer sees |
-| `<leader>gl` | **L**og — commit history, with each commit's diff |
-| `<leader>gf` | History of this **f**ile |
-| `<leader>gq` | **Q**uit the diff view |
-
-In the diff view: `Tab`/`Shift-Tab` for next/previous file, `g?` for all keys.
-Left pane is old, right pane is new.
-
-### The git UI
+### Whole change and history
 
 | Keys | Action |
 | --- | --- |
-| `<leader>gg` | Open Neogit — the status buffer |
-| `<leader>gc` | Write a **c**ommit |
+| `<leader>gd` | Diffview: every changed file, side by side |
+| `<leader>gm` | Diff the branch against main |
+| `<leader>gl` | Log: commit history with each commit's diff |
+| `<leader>gf` | History of this file |
+| `<leader>gq` | Quit the diff view |
+
+In the diff view, `Tab`/`Shift-Tab` move between files, `g?` lists all keys.
+Left pane old, right new.
+
+### Neogit
+
+| Keys | Action |
+| --- | --- |
+| `<leader>gg` | Neogit status buffer |
+| `<leader>gc` | Write a commit |
 | `<leader>gs` | Fuzzy-list changed files |
-| `<leader>gb` | Fuzzy-list and switch **b**ranches |
+| `<leader>gb` | Fuzzy-list and switch branches |
 | `<leader>gz` | List stashes |
 
-Neogit is self-documenting: press `?` inside it for every command. The main
-ones: `Tab` expands a file's diff, `s`/`u` stage and unstage, `c` then `c`
-commits, `p`/`F` push and pull, `q` quits.
-
-### Which to use
-
-- Sanity-check the file I'm in → `]c`, `<leader>hp`
-- Review everything before committing → `<leader>gd`
-- Stage and commit → `<leader>gg`
-- See my branch as a whole → `<leader>gm`
-- When and why did this line change → `<leader>gf`, or `<leader>hb`
-
----
+Inside Neogit: `?` lists every command, `Tab` expands a diff, `s`/`u` stage and
+unstage, `c` `c` commits, `p`/`F` push and pull, `q` quits.
 
 ## Maintenance
 
-| Command | What it does |
+| Command | Action |
 | --- | --- |
 | `:Lazy` | Plugins — `U` update, `S` sync, `x` clean |
 | `:Mason` | Servers and tools — `i` install, `X` uninstall |
 | `:checkhealth` | Full diagnostic |
-| `:LspInfo` | Which servers are attached here |
-| `:ConformInfo` | Which formatter runs here |
+| `:LspInfo` | Servers attached to this buffer |
+| `:ConformInfo` | Formatter for this buffer |
 | `:TSUpdate` | Rebuild syntax parsers |
 
-When something misbehaves: `:checkhealth`, then `:LspInfo` if it is a language
-feature, then `:Lazy` to confirm the plugin loaded.
-
-### Rolling back a bad update
-
-`lazy-lock.json` is tracked precisely so this works. After an update that breaks
-something:
-
-```sh
-git checkout lazy-lock.json
-```
-
-then `:Lazy restore` to put every plugin back to the previously pinned commit.
-
----
+Roll back a bad plugin update with `git checkout lazy-lock.json` then
+`:Lazy restore`.
 
 ## Adding a language
 
-1. In `init.lua`, find `local servers = {` and add a line, e.g. `gopls = {},`
-2. Restart — Mason installs it automatically
-3. For formatting, add the filetype to `formatters_by_ft` in
+1. In `init.lua`, find `local servers = {` and add e.g. `gopls = {},`
+2. Restart — Mason installs it
+3. Formatting: add the filetype to `formatters_by_ft` in
    `lua/custom/plugins/formatting.lua`
-4. For a linter with no language server, add it to `linters_by_ft` in
+4. Linter with no language server: add to `linters_by_ft` in
    `lua/kickstart/plugins/lint.lua`
-
----
 
 ## Layout
 
 | Path | Contains |
 | --- | --- |
 | `init.lua` | Options, keymaps, language servers, most plugins |
-| `lua/custom/plugins/formatting.lua` | Which formatter per filetype |
+| `lua/custom/plugins/formatting.lua` | Formatter per filetype |
 | `lua/custom/plugins/git.lua` | Diffview and Neogit |
 | `lua/custom/plugins/python.lua` | Python test debugging |
+| `lua/custom/plugins/treesitter-textobjects.lua` | Definition objects and movement |
 | `lua/kickstart/plugins/lint.lua` | Linters not covered by a server |
 | `lua/kickstart/plugins/debug.lua` | Debugger setup |
-| `lazy-lock.json` | Pinned plugin versions — **tracked on purpose** |
+| `lazy-lock.json` | Pinned plugin versions, tracked deliberately |
