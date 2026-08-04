@@ -13,7 +13,10 @@ return {
   config = function()
     -- debugpy lives in its own venv under Mason, separate from the project's
     -- interpreter, so the debugger works even in a venv that lacks debugpy.
-    require('dap-python').setup(vim.fs.joinpath(vim.fn.stdpath 'data', 'mason', 'packages', 'debugpy', 'venv', 'bin', 'python'))
+    -- Windows venvs use Scripts\python.exe instead of bin/python.
+    local subdir = vim.fn.has 'win32' == 1 and 'Scripts' or 'bin'
+    local exe = vim.fn.has 'win32' == 1 and 'python.exe' or 'python'
+    require('dap-python').setup(vim.fs.joinpath(vim.fn.stdpath 'data', 'mason', 'packages', 'debugpy', 'venv', subdir, exe))
     require('dap-python').test_runner = 'pytest'
 
     local map = function(keys, func, desc) vim.keymap.set('n', keys, func, { desc = 'Debug: ' .. desc }) end

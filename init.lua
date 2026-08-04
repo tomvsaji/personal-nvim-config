@@ -624,15 +624,23 @@ require('lazy').setup({
       })
 
       -- Which interpreter a Python server should analyse against: an activated
-      -- virtualenv wins, then a project-local .venv/venv, then python3 on PATH.
+      -- virtualenv wins, then a project-local .venv/venv, then python on PATH.
       -- Without this, pyright reports every third-party import as missing.
+      --
+      -- Windows lays virtualenvs out as Scripts\python.exe rather than
+      -- bin/python, so the leaf path differs by platform. (Under WSL this is
+      -- Linux and takes the unix branch.)
       local function python_path(workspace)
-        if vim.env.VIRTUAL_ENV then return vim.fs.joinpath(vim.env.VIRTUAL_ENV, 'bin', 'python') end
+        local subdir = vim.fn.has 'win32' == 1 and 'Scripts' or 'bin'
+        local exe = vim.fn.has 'win32' == 1 and 'python.exe' or 'python'
+        if vim.env.VIRTUAL_ENV then return vim.fs.joinpath(vim.env.VIRTUAL_ENV, subdir, exe) end
         for _, dir in ipairs { '.venv', 'venv' } do
-          local candidate = vim.fs.joinpath(workspace or vim.fn.getcwd(), dir, 'bin', 'python')
+          local candidate = vim.fs.joinpath(workspace or vim.fn.getcwd(), dir, subdir, exe)
           if vim.uv.fs_stat(candidate) then return candidate end
         end
-        return vim.fn.exepath 'python3'
+        -- Windows ships `python`; most unixes only guarantee `python3`.
+        local fallback = vim.fn.exepath 'python3'
+        return fallback ~= '' and fallback or vim.fn.exepath 'python'
       end
 
       -- Enable the following language servers
