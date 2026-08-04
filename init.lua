@@ -97,11 +97,13 @@ vim.g.have_nerd_font = false
 -- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
 
--- Make line numbers default
-vim.o.number = true
--- You can also add relative line numbers, to help with jumping.
---  Experiment for yourself to see if you like it!
--- vim.o.relativenumber = true
+-- Relative line numbers, so counted motions (5j, d3k) can be read straight off
+-- the gutter. The absolute number of the current line is in the statusline, so
+-- it is not repeated here.
+--  For the hybrid style instead — absolute on the cursor line, relative
+--  elsewhere — also set vim.o.number = true.
+vim.o.number = false
+vim.o.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
