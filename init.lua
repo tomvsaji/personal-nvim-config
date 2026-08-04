@@ -828,15 +828,12 @@ require('lazy').setup({
         -- <c-k>: Toggle signature help
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
-        -- enter: <CR> accepts the highlighted suggestion, and is a plain newline
-        -- when nothing is highlighted. <Tab> jumps snippet placeholders.
-        -- Paired with completion.list.selection.preselect = false below — with
-        -- preselect on, every <CR> while the menu is open would take a
-        -- completion instead of breaking the line.
-        preset = 'enter',
+        -- super-tab: <Tab> accepts the highlighted suggestion (or the first one
+        -- if you have not moved), then falls through to jumping snippet
+        -- placeholders, then to a literal Tab when the menu is closed.
+        preset = 'super-tab',
 
-        -- The preset drops <C-y>; keep it as a one-key accept of the top item,
-        -- which is otherwise two keys (<C-n> then <CR>) now nothing preselects.
+        -- super-tab drops <C-y>; keep it so the standard accept key still works.
         ['<C-y>'] = { 'select_and_accept', 'fallback' },
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
@@ -853,14 +850,6 @@ require('lazy').setup({
         -- By default, you may press `<c-space>` to show the documentation.
         -- Optionally, set `auto_show = true` to show the documentation after a delay.
         documentation = { auto_show = false, auto_show_delay_ms = 500 },
-
-        list = {
-          selection = {
-            -- Nothing is highlighted until you move with <C-n>/<C-p>, so <CR>
-            -- stays a newline unless you have actually picked something.
-            preselect = false,
-          },
-        },
       },
 
       sources = {

@@ -122,22 +122,17 @@ unrelated diffs in projects with a different style. To enable, add
 
 | Keys | Action |
 | --- | --- |
-| `Ctrl-n` / `Ctrl-p` | Next / previous suggestion (also highlights it) |
-| `Enter` | Accept the highlighted suggestion |
-| `Ctrl-y` | Accept the top suggestion without highlighting first |
+| `Tab` | Accept the suggestion (the first, if none selected) |
+| `Ctrl-y` | Accept |
+| `Ctrl-n` / `Ctrl-p` | Next / previous suggestion |
 | `Ctrl-Space` | Open the menu, or show docs if open |
 | `Ctrl-e` | Dismiss |
 | `Ctrl-k` | Toggle signature help |
-| `Tab` / `Shift-Tab` | Next / previous snippet placeholder |
+| `Shift-Tab` | Previous snippet placeholder |
 | `Ctrl-f` / `Ctrl-b` | Scroll the docs popup |
 
-blink `enter` preset with `completion.list.selection.preselect = false`. Nothing
-is highlighted until you press `Ctrl-n`, so `Enter` inserts a newline unless you
-have picked something — with preselect on, every `Enter` while the menu was open
-would take a completion instead.
-
-To accept the top item in one key, use `Ctrl-y`. To restore `Tab` as an accept
-key, set `preset = 'super-tab'` in `init.lua`.
+`Tab` accepts with the menu open, jumps placeholders inside a snippet, otherwise
+inserts a tab (blink `super-tab` preset). Space never accepts.
 
 ## Brackets and quotes
 
