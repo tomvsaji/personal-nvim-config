@@ -10,7 +10,7 @@ is space; `<leader>` below means space. Upstream README:
 ## Install
 
 ```sh
-git clone <this-repo> ~/.config/nvim
+git clone git@github.com:tomvsaji/personal-nvim-config.git ~/.config/nvim
 nvim          # installs plugins, servers and parsers; takes a few minutes
 :checkhealth  # after restart, should report no errors
 ```
@@ -141,13 +141,24 @@ the closer when it exists steps over it; backspace on an empty pair deletes
 both; `Enter` inside a pair opens it into a block. For existing text, use
 surround below.
 
-## Files and windows
+## Files, windows and tmux panes
 
 | Keys | Action |
 | --- | --- |
 | `\` | Toggle the file tree, revealing the current file |
-| `Ctrl-h/j/k/l` | Move focus between splits |
+| `Ctrl-h` / `Ctrl-j` / `Ctrl-k` / `Ctrl-l` | Move left / down / up / right across Neovim splits and tmux panes |
+| `Ctrl-\` | Return to the previously active Neovim split or tmux pane |
 | `:vsplit` / `:split` | Split vertically / horizontally |
+
+[`vim-tmux-navigator`](https://github.com/christoomey/vim-tmux-navigator)
+provides both sets of mappings. Within Neovim it first moves between editor
+splits; at an outer edge it asks tmux to select the neighboring pane. Outside
+tmux, the same keys continue to work between Neovim splits.
+
+The matching tmux plugin must also be installed. This is already declared in
+the [personal tmux config](https://github.com/tomvsaji/personal-tmux-config),
+where TPM installs it with `Ctrl-Space I`. Movement is spatial: `Ctrl-h/l`
+crosses side-by-side panes, while `Ctrl-j/k` crosses vertically stacked panes.
 
 ## Debugging
 
