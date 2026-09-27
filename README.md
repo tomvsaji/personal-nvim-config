@@ -15,6 +15,8 @@ nvim          # installs plugins, servers and parsers; takes a few minutes
 :checkhealth  # after restart, should report no errors
 ```
 
+Fresh Linux server? Step-by-step guide: [docs/SETUP-VPS.md](docs/SETUP-VPS.md).
+
 | Requirement | Why | macOS | Debian/Ubuntu |
 | --- | --- | --- | --- |
 | Neovim **0.11+** | `vim.lsp.config` API | `brew install neovim` | AppImage/tarball — distro packages too old |
